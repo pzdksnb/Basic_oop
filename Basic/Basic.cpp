@@ -95,39 +95,31 @@ void processLine(string line, Program & program, EvalState & state) {
            }
            program.show();
        }
-       if(token=="PRINT" ||token=="INPUT" || token=="LET"){
+       if(token=="PRINT" ||token=="INPUT" || token=="LET") {
            scanner.setInput(line);
            Statement *st=nullptr;
-           if(!scanner.hasMoreTokens()){
-               cout<<"SYNTAX ERROR\n";
+           try{
+               st=parsestate(scanner, line);
+           }
+           catch (...){
+               cout <<"SYNTAX ERROR"<< endl;
                return;
-           }else{
-               try{
-                   st=parsestate(scanner, line);
-               }
-               catch(...){
-                   cout<<"SYNTAX ERROR\n";
-                   return;
-               }
-               try{
-                   st->execute(state);
-               }
-               catch(ErrorException &a){
-                   if(a.getMessage()=="zero"){
-                       cout<<"DIVIDE BY ZERO\n";
-                       delete st;
-                       return;
-                   }else{
-                       cout<<"VARIABLE NOT DEFINED\n";
-                       delete st;
-                       return;
-                   }
-               }
+           }
+           try{
+               st->execute(state);
                delete st;
            }
-           return;
-       }
-       else if(token=="CLEAR"){
+           catch(ErrorException &ex){
+               delete st;
+               if (ex.getMessage()=="zero"){
+                   cout<<"DIVIDE BY ZERO"<<endl;
+                   return;
+               }else{
+                   cout<<"VARIABLE NOT DEFINED"<<endl;
+                   return;
+               }
+           }
+       }else if(token=="CLEAR"){
            if(scanner.hasMoreTokens()){
                error( "SYNTAX ERROR");
                return;
@@ -140,6 +132,17 @@ void processLine(string line, Program & program, EvalState & state) {
            exit(0);
        }
        else if(token=="HELP"){
+       }else{
+           cout<<"SYNTAX ERROR"<<endl;
+           return;
        }
    }
+   else{
+        cout<<"SYNTAX ERROR"<<endl;
+        return;
+    }
 }
+
+
+
+

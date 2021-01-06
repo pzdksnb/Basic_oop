@@ -23,10 +23,11 @@ Program::~Program() {
 }
 
 void Program::clear() {
-   int nsize=mp.size();
-   for(int index=0;index<nsize;index++){
-       mp.erase(index);
-   }
+    for(auto &it:mp){
+        delete it.second.exp;
+        it.second.exp = nullptr;
+    }
+    mp.clear();
 }
 
 void Program::addSourceLine(int lineNumber, string line) {
