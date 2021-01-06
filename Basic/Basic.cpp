@@ -59,8 +59,87 @@ void processLine(string line, Program & program, EvalState & state) {
    scanner.ignoreWhitespace();     //删除空格
    scanner.scanNumbers();          //寻找数字
    scanner.setInput(line);         //输入流
-   Expression *exp = parseExp(scanner);
-   int value = exp->eval(state);
-   cout << value << endl;
-   delete exp;
+//   Expression *exp = parseExp(scanner);
+//   int value = exp->eval(state);
+//   cout << value << endl;
+//   delete exp;
+   string token;
+   if(scanner.hasMoreTokens()) token=scanner.nextToken();
+   else return;
+   if(scanner.getTokenType(token)==WORD){
+       if(token=="RUN"){
+           if(scanner.hasMoreTokens()){
+               error( "SYNTAX ERROR");
+           }else
+               try{
+                   program.runprogram(state);
+               }
+               catch(ErrorException &a){
+                   if(a.getMessage()=="end") return;
+                   if(a.getMessage()=="zero"){
+                      error("DIVIDE BY ZERO");
+                      return;
+                   }
+                   if(a.getMessage()=="goto"){
+                       error("LINE NUMBER ERROR");
+                   } else {
+                       error("VARIABLE NOT DEFINED");
+                       return;
+                   }
+               }
+       }
+       else if(token=="LIST"){
+           if(scanner.hasMoreTokens()){
+               error("SYNTAX ERROR");
+               return;
+           }
+           program.show();
+       }
+       if(token=="PRINT" ||token=="INPUT" || token=="LET"){
+           scanner.setInput(line);
+           Statement *st=nullptr;
+           if(!scanner.hasMoreTokens()){
+               cout<<"SYNTAX ERROR\n";
+               return;
+           }else{
+               try{
+                   st=parsestate(scanner, line);
+               }
+               catch(...){
+                   cout<<"SYNTAX ERROR\n";
+                   return;
+               }
+               try{
+                   st->execute(state);
+               }
+               catch(ErrorException &a){
+                   if(a.getMessage()=="zero"){
+                       cout<<"DIVIDE BY ZERO\n";
+                       delete st;
+                       return;
+                   }else{
+                       cout<<"VARIABLE NOT DEFINED\n";
+                       delete st;
+                       return;
+                   }
+               }
+               delete st;
+           }
+           return;
+       }
+       else if(token=="CLEAR"){
+           if(scanner.hasMoreTokens()){
+               error( "SYNTAX ERROR");
+               return;
+           }
+           program.clear();
+           state.clear();
+           return;
+       }
+       else if(token=="QUIT"){
+           exit(0);
+       }
+       else if(token=="HELP"){
+       }
+   }
 }

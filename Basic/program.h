@@ -135,8 +135,23 @@ public:
 
    int getNextLineNumber(int lineNumber);
 
+   void runprogram(EvalState &state);
+   bool Find(int a);
+   void show();
 private:
-    map<int,string>mp;
+    struct data{
+        string information;
+        Statement *exp=nullptr;
+        data(string &inf,Statement *e){
+            information=inf;
+            exp=e;
+        }
+        data(string &inf){
+            information=inf;
+        }
+        data(){};
+    };
+    map<int,data>mp;
 
 // Fill this in with whatever types and instance variables you need
 

@@ -90,7 +90,7 @@ class PrintStatement:public Statement{
 private:
     Expression *exp;
 public:
-    PrintStatement(TokenScanner &scanner);
+    PrintStatement(Expression *exp);
     ~PrintStatement();
     void execute(EvalState & state) override;
 };
@@ -99,7 +99,7 @@ private:
     Expression *exp;
     string name;
 public:
-    InputStatement(TokenScanner &scanner);
+    InputStatement(string &n);
     ~InputStatement();
     void execute(EvalState & state) override;
 };
@@ -112,21 +112,24 @@ public:
     void execute(EvalState & state) override;
 };
 class GoToStatement:public Statement{
+    friend class IfStatement;
 private:
-    string line;
+    int line_number;
 public:
-    GoToStatement(TokenScanner &scanner);
+    GoToStatement(int lin);
     ~GoToStatement();
     void execute(EvalState & state) override;
 };
 class IfStatement:public Statement{
 private:
+
+
     Expression *n1;
     Expression *n2;
-    char Operator;
-    string line;
-private:
-    IfStatement(string li);
+    GoToStatement *go;
+    string Operator;
+public:
+    IfStatement(string &op,Expression *n1,Expression *n2, GoToStatement *gt);
     ~IfStatement();
     void execute(EvalState & state) override;
 };

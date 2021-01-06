@@ -11,6 +11,7 @@
 #include "exp.h"
 
 #include "../StanfordCPPLib/tokenscanner.h"
+#include "statement.h"
 
 /*
  * Function: parseExp
@@ -22,7 +23,7 @@
  */
 
 Expression *parseExp(TokenScanner & scanner);
-
+Statement *parsestate(TokenScanner & scanner,string line);
 /*
  * Function: readE
  * Usage: Expression *exp = readE(scanner, prec);

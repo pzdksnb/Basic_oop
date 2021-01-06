@@ -9,6 +9,8 @@
 
 #include <string>
 #include "statement.h"
+#include "../StanfordCPPLib/tokenscanner.h"
+#include "../StanfordCPPLib/simpio.h"
 using namespace std;
 
 /* Implementation of the Statement class */
@@ -27,34 +29,21 @@ void RemStatement::execute(EvalState &state){
 }
 
 
-PrintStatement::PrintStatement(TokenScanner &scanner){
-    exp=readE(scanner);
-    if(scanner.hasMoreTokens()){
-        error("too many tokes or have =");
-    }else if(exp->getType()==2){
-            if(((CompoundExp*)(exp))->getOp()=="="){
-                error("you assign wrong when eval");
-            }
-        }
-    }
+PrintStatement::PrintStatement(Expression *exp):exp(exp){
+
+}
 
 PrintStatement::~PrintStatement(){
     delete exp;
 }
 void PrintStatement::execute(EvalState &state){
-    
+    cout<<exp->eval(state)<<endl;
 }
 
-InputStatement::InputStatement(TokenScanner &scanner){
-    exp=readT(scanner);
-    name=exp->toString();
-    if(scanner.hasMoreTokens()){
-        error("input wrong");
-    }
+InputStatement::InputStatement(string &n):name(n){
 }
 
 InputStatement::~InputStatement(){
-    delete exp;
 }
 
 void InputStatement::execute(EvalState &state){
@@ -63,28 +52,54 @@ void InputStatement::execute(EvalState &state){
     Numbervar.ignoreWhitespace();
     Numbervar.ignoreComments();
     flag=true;
+    int value;
     while(flag){
-        try{
             flag=false;
             string number;
-            number=getLine("?");
+            number=getLine();
             Numbervar.setInput(number);
-            while(Numbervar.hasMoreTokens()){
-                exp=readT(Numbervar);
-                if(exp->getType()==1) error("input wrong");
+           if(!Numbervar.hasMoreTokens()){
+               continue;
             }
-            Numbervar.setInput(name+"="+number);
-            exp=readE(Numbervar);
-            if(Numbervar.hasMoreTokens() || exp->getType()!=2){
-                error("input wrong");
-            }
-            exp->eval(state);
-        }
-        catch(...){
-              cout<<"INVALIDE NUMBER"<<endl;
-              flag=true;
-        }
+           if(Numbervar.nextToken()!="-"){
+               if(Numbervar.getTokenType(Numbervar.nextToken())!=NUMBER){
+                   cout<<"INVALID NUMBER"<<endl<<"?";
+                   continue;
+               }
+               if(Numbervar.hasMoreTokens()){
+                   cout<<"INVALID NUMBER"<<endl<<"?";
+                   continue;
+               }
+               try{
+                   value=stringToInteger(Numbervar.nextToken());
+               }
+               catch(...){
+                   cout<<"INVALIDE NUMBER"<<endl<<"?";
+                   flag=true;
+                   continue;
+               }
+           }
+            //exp->eval(state);
+          else{
+              if(Numbervar.getTokenType(Numbervar.nextToken())!=NUMBER){
+                  cout<<"INVALIDE NUMBER"<<endl<<"?";
+                  continue;
+              }
+              if(Numbervar.hasMoreTokens()){
+                  cout<<"INVALIDE NUMBER"<<endl<<"?";
+                  continue;
+              }
+              try{
+                  value=-stringToInteger(Numbervar.nextToken());
+              }
+              catch(...){
+                  cout<<"INVALIDE NUMBER"<<endl<<"?";
+                  continue;
+              }
+          }
+          state.setValue(name,value); //set in the table
     }
+
 }
 
 EndStatement::EndStatement()=default;
@@ -95,32 +110,40 @@ void EndStatement::execute(EvalState &state){
     error("end");
 }
 
-GoToStatement::GoToStatement(TokenScanner &scanner){
-    Expression*tmp;
-    tmp=readE(scanner);
-    if(scanner.hasMoreTokens()){
-        error("line input error");
-    }
-    if(tmp->getType()!=0){
-        error("line input error");
-    }
-    line=tmp->toString();
-    delete tmp;
-}
-
-GoToStatement::~GoToStatement(){
+GoToStatement::GoToStatement(int lin):line_number(lin){
 
 }
+
+GoToStatement::~GoToStatement()=default;
 
 void GoToStatement::execute(EvalState &state){
-    error("to_line"+line);
+    error("to_line"+line_number);
 }
 
-IfStatement::IfStatement(string l){
-    for(int i=0;i<l.length();i++){
-        if(l[i]=='=' || l[i]=='<' || l[i]=='>'){
-            if()
-        }
+IfStatement::IfStatement(string &op,Expression *n1,Expression *n2,GoToStatement *gt):Operator(op),n1(n1),n2(n2),go(gt){
+  }
+IfStatement::~IfStatement(){
+    delete n1;
+    delete n2;
+    delete go;
+}
+void IfStatement::execute(EvalState &state){
+    bool flag;
+    if(Operator=="<"){
+        if(n1->eval(state)<n2->eval(state)) flag=true;
+        else flag=false;
     }
-
+    if(Operator==">"){
+        if(n1->eval(state)>n2->eval(state)) flag=true;
+        else flag=false;
+    }
+    if(Operator=="="){
+        if(n1->eval(state)==n2->eval(state)) flag=true;
+        else flag=false;
+    }
+    if(!flag) return;
+    else go->execute(state);
 }
+
+
+

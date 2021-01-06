@@ -11,6 +11,7 @@
 #include <string>
 #include "program.h"
 #include "statement.h"
+#include "../StanfordCPPLib/error.h"
 using namespace std;
 
 Program::Program() {
@@ -22,7 +23,6 @@ Program::~Program() {
 }
 
 void Program::clear() {
-   map<int,string>mp;
    int nsize=mp.size();
    for(int index=0;index<nsize;index++){
        mp.erase(index);
@@ -45,29 +45,71 @@ string Program::getSourceLine(int lineNumber) {
 }
 
 void Program::setParsedStatement(int lineNumber, Statement *stmt) {
-    //map<int,Statement>mp;
-    //TODO
-    mp[lineNumber]=*stmt;
+    if(mp.count(lineNumber)==0) error("SYNTAX ERROR");
+    else {
+        delete mp[lineNumber].exp;
+        mp[lineNumber].exp=stmt;
+    }
 }
 
 Statement *Program::getParsedStatement(int lineNumber) {
-   // map<int,Statement*>mp;
-   //TODO
-    if(mp.count(lineNumber)==1) return mp[lineNumber];
-    if(mp.count(lineNumber)==0) return NULL;
+    if(mp.count(lineNumber)==1) return mp[lineNumber].exp;
+    if(mp.count(lineNumber)==0) error("SYNTAX ERROR");
 
 }
 
 int Program::getFirstLineNumber() {
-    //TODO
     if(mp.empty()){
       return -1;
   }
-   else return mp[0];
+    auto it = mp.begin();
+    return it->first;
 
 }
 
 int Program::getNextLineNumber(int lineNumber) {
     if(mp.count(lineNumber+1)==1) return lineNumber+1;
     if(mp.count(lineNumber)==0 || mp.count(lineNumber+1)==0) return -1;
+}
+bool Program::Find(int a){
+    auto it=mp.begin();
+    for(;it!=mp.end();it++){
+        if(it->first == a) return true;
+    }
+    return false;
+}
+void Program::show(){
+    auto it=mp.begin();
+    for(;it!=mp.end();it++){
+        cout<<it->second.information<<endl;
+    }
+}
+
+void Program::runprogram(EvalState &state){
+    if(mp.empty()) {
+        error("error running");
+        return;
+    }
+    auto it = mp.begin();
+    for( ;it!=mp.end();it++){
+        try{
+            (it->second.exp)->execute(state);
+        }
+        catch(ErrorException &a){
+            TokenScanner scanner;
+            if(scanner.getTokenType(a.getMessage()) == NUMBER){
+                if(!this->Find(stringToInteger(a.getMessage()))){
+                    error("GoTo");
+                    return;
+                }
+                else{
+                    int n=stringToInteger(a.getMessage());
+                    it=mp.find(n);
+                    continue;
+                }
+            }else{
+                error(a.getMessage());
+            }
+        }
+    }
 }

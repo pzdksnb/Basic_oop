@@ -29,6 +29,152 @@ Expression *parseExp(TokenScanner & scanner) {
    return exp;
 }
 
+
+Statement *parsestate(TokenScanner & scanner,string line){
+    string token;
+    Expression *exp=nullptr;
+    token=scanner.nextToken();
+    if(scanner.getTokenType(token)!=WORD){
+        error("SYNTAX ERROR");
+    }
+    else if(token=="REM"){
+            return new RemStatement();
+        }
+
+    else if(token=="PRINT"){
+           exp=parseExp(scanner);
+           if(exp->getType()==COMPOUND) {
+               if ((((CompoundExp *) exp)->getOp() == "=")) {
+                   delete exp;
+                   error("SYNTAX ERROR");
+               }
+           }
+               return new PrintStatement(exp);
+         }
+    else if(token=="INPUT"){
+               if(!scanner.hasMoreTokens()){
+                   error("SYNTAX ERROR");
+               }
+               else{
+                   token=scanner.nextToken();
+                   if(scanner.getTokenType(token)!=WORD){
+                       error("SYNTAX ERROR");
+                   } else if(scanner.hasMoreTokens()){
+                       error("SYNTAX ERROR");
+                   }
+                   return new InputStatement(token);
+               }
+           }
+    else if(token =="END"){
+               if(scanner.hasMoreTokens()){
+                   error("SYNTAX ERROR");
+               }
+               return new EndStatement();
+           }
+    else if(token == "GOTO") {
+               if (!scanner.hasMoreTokens()) {
+                   error("SYNTAX ERROR");
+               } else {
+                   token = scanner.nextToken();
+                   if (scanner.getTokenType(token) != NUMBER) {
+                       error("SYNTAX ERROR");
+                   }
+                   if (scanner.hasMoreTokens()) {
+                       error("SYNTAX ERROR");
+                   }
+                   int lineNumber;
+                   try {
+                       lineNumber = stringToInteger(token);
+                   } catch (...) {
+                       error("SYNTAX ERROR");
+                   }
+                   return new GoToStatement(lineNumber);
+               }
+           }
+    else if(token == "IF"){
+               string Operator;
+               Expression *n1;
+               Expression *n2;
+               GoToStatement *go;
+               if(line.find('=')==string::npos){
+                   Operator=scanner.nextToken();
+                   n1=readE(scanner);
+                   if(token!="<" && token!=">" && token!="="){
+                       error("SYNTAX ERROR");
+                       delete n1;
+                   }
+                   n2=readE(scanner);
+                   token=scanner.nextToken();
+                   if (token!="THEN") {
+                       error("SYNTAX ERROR");
+                       delete n1;
+                       delete n2;
+                   }else{
+                       if(!scanner.hasMoreTokens()){
+                           error("SYNTAX ERROR");
+                           delete n1;
+                           delete n2;
+                       }else{
+                           token=scanner.nextToken();
+                           if(scanner.getTokenType(token)!=NUMBER){
+                               error("SYNTAX ERROR");
+                               delete n1;
+                               delete n2;
+                           }
+                           int lineNumber;
+                           try{
+                               lineNumber=stringToInteger(token);
+                           }
+                           catch(...){
+                               delete n1;
+                               delete n2;
+                               error("SYNTAX ERROR");
+                           }
+                           go=new GoToStatement(stringToInteger(token));
+                           return new IfStatement(Operator,n1,n2,go);
+                       }
+                   }
+               } else {
+                   Operator="=";
+                   string tmp;
+                   scanner.setInput(line);
+                   while(scanner.hasMoreTokens()){
+                       token=scanner.nextToken();
+                       if(token=="=") break;
+                       tmp+=(token+" ");
+                   }
+                   n2=readE(scanner);
+                   token= scanner.nextToken();
+                   if (token!="THEN") {
+                       error("SYNTAX ERROR");
+                       delete n2;
+                   }
+                   token=scanner.nextToken();
+                   if(scanner.getTokenType(token)!=NUMBER){
+                       error("SYNTAX ERROR");
+                       delete n2;
+                   }
+                   int lineNumber;
+                   try{
+                       lineNumber=stringToInteger(token);
+                   }
+                   catch(...){
+                       error("SYNTAX ERROR");
+                       delete n2;
+                   }
+                    scanner.setInput(tmp);
+                    go=new GoToStatement(lineNumber);
+                    n1=readE(scanner);
+                    return new IfStatement(Operator,n1,n2,go);
+               }
+           }
+            error("SYNTAX ERROR");
+        }
+
+
+
+
+
 /*
  * Implementation notes: readE
  * Usage: exp = readE(scanner, prec);
