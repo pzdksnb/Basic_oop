@@ -136,7 +136,7 @@ void processLine(string line, Program & program, EvalState & state) {
            catch(ErrorException &ex){
                delete st;
                if (ex.getMessage()=="zero"){
-                   cout<<"DIVIDE BY ZERO"<<endl;
+                     cout<<"DIVIDE BY ZERO"<<endl;
                    return;
                }else{
                    cout<<"VARIABLE NOT DEFINED"<<endl;

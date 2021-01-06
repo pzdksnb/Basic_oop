@@ -116,7 +116,8 @@ GoToStatement::GoToStatement(int lin):line_number(lin){
 GoToStatement::~GoToStatement()=default;
 
 void GoToStatement::execute(EvalState &state){
-    error(integerToString(line_number));
+//    error(integerToString(line_number));
+    throw line_number;
 }
 
 IfStatement::IfStatement(string &op,Expression *n1,Expression *n2,GoToStatement *gt):Operator(op),n1(n1),n2(n2),go(gt){

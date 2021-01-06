@@ -115,12 +115,12 @@ void Program::runprogram(EvalState &state){
                 error(a.getMessage());
             }
         }
-//        catch (string output)
-//        {
+       catch (int lineNumber)
+        {
 //            int a=stringToInteger(output);
-//            it=mp.find(a);
-//            if(mp.count(a)==1) it--;
-//            if(mp.count(a)==0) error("goto");
-//        }
+            it=mp.find(lineNumber);
+           if(it!=mp.end()) it--;
+           else error("goto");
+        }
     }
 }
