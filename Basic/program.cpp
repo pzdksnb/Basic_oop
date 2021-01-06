@@ -36,8 +36,11 @@ void Program::addSourceLine(int lineNumber, string line) {
 }
 
 void Program::removeSourceLine(int lineNumber) {
-   if(mp.count(lineNumber)==0) return;
-   if(mp.count(lineNumber)==1) mp.erase(lineNumber);
+   if(mp.count(lineNumber)==0) error("SYNTAX ERROR");
+   if(mp.count(lineNumber)==1) {
+       delete mp[lineNumber].exp;
+       mp.erase(lineNumber);
+   };
 }
 
 string Program::getSourceLine(int lineNumber) {
@@ -98,9 +101,9 @@ void Program::runprogram(EvalState &state){
         }
         catch(ErrorException &a){
             TokenScanner scanner;
-            if(scanner.getTokenType(a.getMessage()) == NUMBER){
+            if(scanner.getTokenType(a.getMessage())==NUMBER){
                 if(!this->Find(stringToInteger(a.getMessage()))){
-                    error("GoTo");
+                    error("goto");
                     return;
                 }
                 else{
@@ -111,6 +114,13 @@ void Program::runprogram(EvalState &state){
             }else{
                 error(a.getMessage());
             }
+        }
+        catch (string output)
+        {
+            int a=stringToInteger(output);
+            it=mp.find(a);
+            if(mp.count(a)==1) it--;
+            if(mp.count(a)==0) error("goto");
         }
     }
 }

@@ -29,7 +29,13 @@ Expression *parseExp(TokenScanner & scanner) {
    return exp;
 }
 
+bool Check(string token){
+    if(token=="LET" || token=="REM" || token=="PRINT" || token=="END" || token=="IF" ||
+       token=="THEN" || token=="GOTO" || token=="RUN" || token=="LIST" || token=="CLEAR" ||
+       token=="QUIT" || token=="HELP") return false;
 
+    else return true;
+}
 Statement *parsestate(TokenScanner & scanner,string line){
     string token;
     Expression *exp=nullptr;
@@ -37,14 +43,38 @@ Statement *parsestate(TokenScanner & scanner,string line){
     if(scanner.getTokenType(token)!=WORD){
         error("SYNTAX ERROR");
     }
-    else if(token=="REM"){
+    else
+        if(token=="REM"){
             return new RemStatement();
         }
-
-    else if(token=="PRINT"){
+        else
+            if(token=="LET"){
+                if(!scanner.hasMoreTokens()){
+                    error("[Warning] SYNTAX ERROR");
+                }
+                exp = parseExp(scanner);
+                if(exp->getType()!=COMPOUND){
+                    error("[Warning] SYNTAX ERROR");
+                    delete exp;
+                }
+                if(((CompoundExp *)exp)->getOp()!="="){
+                    error("[Warning] SYNTAX ERROR");
+                    delete exp;
+                }
+                if((((CompoundExp *)exp)->getLHS())->getType()!=IDENTIFIER){
+                    error("[Warning] SYNTAX ERROR");
+                    delete exp;
+                }
+                if(!Check(((IdentifierExp *)(((CompoundExp *)exp)->getLHS()))->getName())){
+                    error("[Warning] SYNTAX ERROR");
+                    delete exp;
+                }
+                return new LetStatement(exp);
+            }
+            else if(token=="PRINT"){
            exp=parseExp(scanner);
            if(exp->getType()==COMPOUND) {
-               if ((((CompoundExp *) exp)->getOp() == "=")) {
+               if ((((CompoundExp *) exp)->getOp()=="=")) {
                    delete exp;
                    error("SYNTAX ERROR");
                }
@@ -75,7 +105,7 @@ Statement *parsestate(TokenScanner & scanner,string line){
                if (!scanner.hasMoreTokens()) {
                    error("SYNTAX ERROR");
                } else {
-                   token = scanner.nextToken();
+                   token=scanner.nextToken();
                    if (scanner.getTokenType(token) != NUMBER) {
                        error("SYNTAX ERROR");
                    }
@@ -130,7 +160,7 @@ Statement *parsestate(TokenScanner & scanner,string line){
                                delete n2;
                                error("SYNTAX ERROR");
                            }
-                           go=new GoToStatement(stringToInteger(token));
+                           go=new GoToStatement(lineNumber);
                            return new IfStatement(Operator,n1,n2,go);
                        }
                    }
@@ -170,7 +200,6 @@ Statement *parsestate(TokenScanner & scanner,string line){
            }
             error("SYNTAX ERROR");
         }
-
 
 
 
@@ -233,3 +262,5 @@ int precedence(string token) {
    if (token == "*" || token == "/") return 3;
    return 0;
 }
+
+

@@ -138,7 +138,7 @@ private:
     Expression *exp;
     string name;
 public:
-    LetStatement(TokenScanner &scanner);
+    explicit LetStatement(Expression *exp);
     ~LetStatement();
     void execute(EvalState & state) override;
 };

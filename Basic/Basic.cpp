@@ -66,6 +66,28 @@ void processLine(string line, Program & program, EvalState & state) {
    string token;
    if(scanner.hasMoreTokens()) token=scanner.nextToken();
    else return;
+    if(scanner.getTokenType(token)==NUMBER){
+        int lineNumber;
+        try{
+            lineNumber = stringToInteger(token);
+        } catch (...) {
+            cout<<"SYNTAX ERROR"<<endl;
+            return;
+        }
+        if(!scanner.hasMoreTokens()){
+            program.removeSourceLine(lineNumber);
+            return;
+        }
+        try{
+            Statement *stmt=parsestate(scanner,line);
+            program.addSourceLine(lineNumber,line);
+            program.setParsedStatement(lineNumber,stmt);
+            return;
+        } catch (...) {
+            cout<<"SYNTAX ERROR"<<endl;
+            return;
+        }
+    }
    if(scanner.getTokenType(token)==WORD){
        if(token=="RUN"){
            if(scanner.hasMoreTokens()){
@@ -77,20 +99,22 @@ void processLine(string line, Program & program, EvalState & state) {
                catch(ErrorException &a){
                    if(a.getMessage()=="end") return;
                    if(a.getMessage()=="zero"){
-                      error("DIVIDE BY ZERO");
+                      cout<<"DIVIDE BY ZERO"<<endl;
                       return;
                    }
                    if(a.getMessage()=="goto"){
-                       error("LINE NUMBER ERROR");
-                   } else {
-                       error("VARIABLE NOT DEFINED");
+                       cout<<"LINE NUMBER ERROR"<<endl;
+                   }
+                   else {
+                       cout<<"VARIABLE NOT DEFINED"<<endl;
                        return;
                    }
                }
        }
+
        else if(token=="LIST"){
            if(scanner.hasMoreTokens()){
-               error("SYNTAX ERROR");
+               cout<<"SYNTAX ERROR"<<endl;
                return;
            }
            program.show();
@@ -137,6 +161,7 @@ void processLine(string line, Program & program, EvalState & state) {
            return;
        }
    }
+
    else{
         cout<<"SYNTAX ERROR"<<endl;
         return;

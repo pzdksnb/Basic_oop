@@ -43,22 +43,21 @@ void PrintStatement::execute(EvalState &state){
 InputStatement::InputStatement(string &n):name(n){
 }
 
-InputStatement::~InputStatement(){
+InputStatement::~InputStatement() {
 }
 
 void InputStatement::execute(EvalState &state){
-    bool flag;
+    cout<<"?";
     TokenScanner Numbervar;
     Numbervar.ignoreWhitespace();
     Numbervar.ignoreComments();
-    flag=true;
     int value;
-    while(flag){
-            flag=false;
+    while(true){
             string number;
             number=getLine();
             Numbervar.setInput(number);
            if(!Numbervar.hasMoreTokens()){
+               cout<<"INVALID NUMBER"<<endl<<"?";
                continue;
             }
            if(Numbervar.nextToken()!="-"){
@@ -75,12 +74,11 @@ void InputStatement::execute(EvalState &state){
                }
                catch(...){
                    cout<<"INVALIDE NUMBER"<<endl<<"?";
-                   flag=true;
                    continue;
                }
            }
             //exp->eval(state);
-          else{
+           else{
               if(Numbervar.getTokenType(Numbervar.nextToken())!=NUMBER){
                   cout<<"INVALIDE NUMBER"<<endl<<"?";
                   continue;
@@ -98,6 +96,7 @@ void InputStatement::execute(EvalState &state){
               }
           }
           state.setValue(name,value); //set in the table
+          break;
     }
 
 }
@@ -117,7 +116,7 @@ GoToStatement::GoToStatement(int lin):line_number(lin){
 GoToStatement::~GoToStatement()=default;
 
 void GoToStatement::execute(EvalState &state){
-    error("to_line"+line_number);
+    error(integerToString(line_number));
 }
 
 IfStatement::IfStatement(string &op,Expression *n1,Expression *n2,GoToStatement *gt):Operator(op),n1(n1),n2(n2),go(gt){
@@ -146,4 +145,10 @@ void IfStatement::execute(EvalState &state){
 }
 
 
-
+LetStatement::LetStatement(Expression *exp):exp(exp) {}
+LetStatement::~LetStatement(){
+    delete exp;
+}
+void LetStatement::execute(EvalState &state) {
+    exp->eval(state);
+}
