@@ -43,13 +43,14 @@ void PrintStatement::execute(EvalState &state){
 InputStatement::InputStatement(string &n):name(n){
 }
 
-InputStatement::~InputStatement() {
+InputStatement::~InputStatement()  noexcept {
 }
 
 void InputStatement::execute(EvalState &state){
-    cout<<"?";
+    cout<<" ? ";
     TokenScanner Numbervar;
     Numbervar.ignoreWhitespace();
+
     Numbervar.ignoreComments();
     int value;
     while(true){
@@ -57,41 +58,41 @@ void InputStatement::execute(EvalState &state){
             number=getLine();
             Numbervar.setInput(number);
            if(!Numbervar.hasMoreTokens()){
-               cout<<"INVALID NUMBER"<<endl<<"?";
                continue;
             }
-           if(Numbervar.nextToken()!="-"){
-               if(Numbervar.getTokenType(Numbervar.nextToken())!=NUMBER){
-                   cout<<"INVALID NUMBER"<<endl<<"?";
+           string token=Numbervar.nextToken();
+           if(token!="-"){
+               if(Numbervar.getTokenType(token)!=NUMBER){
+                   cout<<"INVALID NUMBER"<<endl<<" ? ";
                    continue;
                }
                if(Numbervar.hasMoreTokens()){
-                   cout<<"INVALID NUMBER"<<endl<<"?";
+                   cout<<"INVALID NUMBER"<<endl<<" ? ";
                    continue;
                }
                try{
-                   value=stringToInteger(Numbervar.nextToken());
+                   value=stringToInteger(token);
                }
                catch(...){
-                   cout<<"INVALIDE NUMBER"<<endl<<"?";
+                   cout<<"INVALID NUMBER"<<endl<<" ? ";
                    continue;
                }
            }
             //exp->eval(state);
            else{
-              if(Numbervar.getTokenType(Numbervar.nextToken())!=NUMBER){
-                  cout<<"INVALIDE NUMBER"<<endl<<"?";
+              if(Numbervar.getTokenType(token)!=NUMBER){
+                  cout<<"INVALID NUMBER"<<endl<<" ? ";
                   continue;
               }
               if(Numbervar.hasMoreTokens()){
-                  cout<<"INVALIDE NUMBER"<<endl<<"?";
+                  cout<<"INVALID NUMBER"<<endl<<"?";
                   continue;
               }
               try{
-                  value=-stringToInteger(Numbervar.nextToken());
+                  value=-stringToInteger(token);
               }
               catch(...){
-                  cout<<"INVALIDE NUMBER"<<endl<<"?";
+                  cout<<"INVALID NUMBER"<<endl<<"?";
                   continue;
               }
           }
@@ -129,16 +130,18 @@ IfStatement::~IfStatement(){
 }
 void IfStatement::execute(EvalState &state){
     bool flag;
+    int N1=n1->eval(state);
+    int N2=n2->eval(state);
     if(Operator=="<"){
-        if(n1->eval(state)<n2->eval(state)) flag=true;
+        if(N1<N2) flag=true;
         else flag=false;
     }
     if(Operator==">"){
-        if(n1->eval(state)>n2->eval(state)) flag=true;
+        if(N1>N2) flag=true;
         else flag=false;
     }
     if(Operator=="="){
-        if(n1->eval(state)==n2->eval(state)) flag=true;
+        if(N1==N2) flag=true;
         else flag=false;
     }
     if(!flag) return;

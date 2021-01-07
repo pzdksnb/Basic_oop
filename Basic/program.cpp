@@ -31,7 +31,10 @@ void Program::clear() {
 }
 
 void Program::addSourceLine(int lineNumber, string line) {
-   if(mp.count(lineNumber)!=0) mp[lineNumber]=line;
+   if(mp.count(lineNumber)==1) {
+       mp[lineNumber].information =line;
+       if(mp[lineNumber].exp!=nullptr) mp[lineNumber].exp=nullptr ;
+   }
    if(mp.count(lineNumber)==0) mp[lineNumber]=line;
 }
 
@@ -48,11 +51,11 @@ string Program::getSourceLine(int lineNumber) {
    if(mp.count(lineNumber)==0) return "";
 }
 
-void Program::setParsedStatement(int lineNumber, Statement *stmt) {
+void Program::setParsedStatement(int lineNumber, Statement *st) {
     if(mp.count(lineNumber)==0) error("SYNTAX ERROR");
     else {
         delete mp[lineNumber].exp;
-        mp[lineNumber].exp=stmt;
+        mp[lineNumber].exp=st;
     }
 }
 

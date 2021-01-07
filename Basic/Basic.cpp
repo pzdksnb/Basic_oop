@@ -30,7 +30,7 @@ void processLine(string line, Program & program, EvalState & state);
 int main() {
    EvalState state;
    Program program;
-   cout << "Stub implementation of BASIC" << endl;
+  // cout << "Stub implementation of BASIC" << endl;
    while (true) {
       try {
          processLine(getLine(), program, state);
@@ -79,24 +79,24 @@ void processLine(string line, Program & program, EvalState & state) {
             return;
         }
         try{
-            Statement *stmt=parsestate(scanner,line);
+            Statement *st=parsestate(scanner,line);
             program.addSourceLine(lineNumber,line);
-            program.setParsedStatement(lineNumber,stmt);
+            program.setParsedStatement(lineNumber,st);
             return;
         } catch (...) {
             cout<<"SYNTAX ERROR"<<endl;
             return;
         }
     }
-   if(scanner.getTokenType(token)==WORD){
+    else if(scanner.getTokenType(token)==WORD){
        if(token=="RUN"){
-           if(scanner.hasMoreTokens()){
-               error( "SYNTAX ERROR");
-           }else
-               try{
-                   program.runprogram(state);
-               }
-               catch(ErrorException &a){
+           if(scanner.hasMoreTokens()) {
+               error("SYNTAX ERROR");
+           }
+           try{
+               program.runprogram(state);
+           }
+           catch(ErrorException &a){
                    if(a.getMessage()=="end") return;
                    if(a.getMessage()=="zero"){
                       cout<<"DIVIDE BY ZERO"<<endl;
@@ -119,7 +119,7 @@ void processLine(string line, Program & program, EvalState & state) {
            }
            program.show();
        }
-       if(token=="PRINT" ||token=="INPUT" || token=="LET") {
+       else if(token=="PRINT" ||token=="INPUT" || token=="LET") {
            scanner.setInput(line);
            Statement *st=nullptr;
            try{

@@ -13,6 +13,7 @@
 #include "../StanfordCPPLib/error.h"
 #include "../StanfordCPPLib/strlib.h"
 #include "../StanfordCPPLib/tokenscanner.h"
+#include "statement.h"
 using namespace std;
 
 /*
@@ -50,23 +51,23 @@ Statement *parsestate(TokenScanner & scanner,string line){
         else
             if(token=="LET"){
                 if(!scanner.hasMoreTokens()){
-                    error("[Warning] SYNTAX ERROR");
+                    error(" SYNTAX ERROR");
                 }
                 exp = parseExp(scanner);
                 if(exp->getType()!=COMPOUND){
-                    error("[Warning] SYNTAX ERROR");
+                    error("SYNTAX ERROR");
                     delete exp;
                 }
                 if(((CompoundExp *)exp)->getOp()!="="){
-                    error("[Warning] SYNTAX ERROR");
+                    error(" SYNTAX ERROR");
                     delete exp;
                 }
                 if((((CompoundExp *)exp)->getLHS())->getType()!=IDENTIFIER){
-                    error("[Warning] SYNTAX ERROR");
+                    error(" SYNTAX ERROR");
                     delete exp;
                 }
                 if(!Check(((IdentifierExp *)(((CompoundExp *)exp)->getLHS()))->getName())){
-                    error("[Warning] SYNTAX ERROR");
+                    error(" SYNTAX ERROR");
                     delete exp;
                 }
                 return new LetStatement(exp);
@@ -76,7 +77,7 @@ Statement *parsestate(TokenScanner & scanner,string line){
            if(exp->getType()==COMPOUND) {
                if ((((CompoundExp *) exp)->getOp()=="=")) {
                    delete exp;
-                   error("SYNTAX ERROR");
+                   error("SYNTAX ERROR111");
                }
            }
                return new PrintStatement(exp);
@@ -85,28 +86,27 @@ Statement *parsestate(TokenScanner & scanner,string line){
                if(!scanner.hasMoreTokens()){
                    error("SYNTAX ERROR");
                }
-               else{
-                   token=scanner.nextToken();
-                   if(scanner.getTokenType(token)!=WORD){
-                       error("SYNTAX ERROR");
-                   } else if(scanner.hasMoreTokens()){
-                       error("SYNTAX ERROR");
-                   }
-                   return new InputStatement(token);
+               token=scanner.nextToken();
+               if(scanner.getTokenType(token)!=WORD){
+                   error("SYNTAX ERROR");
+               } else if(scanner.hasMoreTokens()){
+                   error("SYNTAX ERROR");
                }
+               return new InputStatement(token);
+
            }
-    else if(token =="END"){
+    else if(token=="END"){
                if(scanner.hasMoreTokens()){
                    error("SYNTAX ERROR");
                }
                return new EndStatement();
            }
-    else if(token == "GOTO") {
+    else if(token=="GOTO"){
                if (!scanner.hasMoreTokens()) {
                    error("SYNTAX ERROR");
                } else {
                    token=scanner.nextToken();
-                   if (scanner.getTokenType(token) != NUMBER) {
+                   if (scanner.getTokenType(token)!=NUMBER) {
                        error("SYNTAX ERROR");
                    }
                    if (scanner.hasMoreTokens()) {
@@ -126,14 +126,22 @@ Statement *parsestate(TokenScanner & scanner,string line){
                Expression *n1;
                Expression *n2;
                GoToStatement *go;
+               n1=readE(scanner);
+               Operator=scanner.nextToken();
+
                if(line.find('=')==string::npos){
-                   Operator=scanner.nextToken();
-                   n1=readE(scanner);
-                   if(token!="<" && token!=">" && token!="="){
+
+                  // cout<<"##"<<Operator<<"##"<<endl;
+                  if(Operator!="<" && Operator!=">" && Operator!="="){
                        error("SYNTAX ERROR");
                        delete n1;
                    }
-                   n2=readE(scanner);
+                   try {
+                       n2=readE(scanner);
+                   } catch (...) {
+                       error("SYNTAX ERROR");
+                       delete n1;
+                   }
                    token=scanner.nextToken();
                    if (token!="THEN") {
                        error("SYNTAX ERROR");
@@ -192,8 +200,8 @@ Statement *parsestate(TokenScanner & scanner,string line){
                        error("SYNTAX ERROR");
                        delete n2;
                    }
-                    scanner.setInput(tmp);
                     go=new GoToStatement(lineNumber);
+                    scanner.setInput(tmp);
                     n1=readE(scanner);
                     return new IfStatement(Operator,n1,n2,go);
                }

@@ -129,7 +129,7 @@ private:
     GoToStatement *go;
     string Operator;
 public:
-    IfStatement(string &op,Expression *n1,Expression *n2, GoToStatement *gt);
+    IfStatement(string &op, Expression *n1,Expression *n2, GoToStatement *gt);
     ~IfStatement();
     void execute(EvalState & state) override;
 };
