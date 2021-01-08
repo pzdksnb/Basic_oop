@@ -39,7 +39,7 @@ bool Check(string token){
 }
 Statement *parsestate(TokenScanner & scanner,string line){
     string token;
-    Expression *exp=nullptr;
+    Expression *exp;
     token=scanner.nextToken();
     if(scanner.getTokenType(token)!=WORD){
         error("SYNTAX ERROR");
